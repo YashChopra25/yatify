@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 await DBConfig();
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello yatify!,users are welcome");
 });
 app.get("/test", (req, res) => {
   res.send({
@@ -25,7 +25,8 @@ app.get("/test", (req, res) => {
 });
 
 // This is an auth middleware that checks if the user is logged in or not
-app.route("/api/v1/auth", HandleAuthRoutes);
+import HandleAuthRoutes from "./routes/HandleAuthRoutes.js";
+app.use("/api/v1/auth", HandleAuthRoutes);
 
 app.listen(PORT, () => {
   console.log("Server started on port " + PORT);
