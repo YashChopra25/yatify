@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Pages/Navbar.tsx";
 import ForgotPassword from "./app/ForgotPassword.tsx";
 import ForgotUserName from "./app/ForgotUserName.tsx";
+import HomePageChat from "./components/Pages/Chat/HomePageChat.tsx";
 
 const NavbarWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -38,6 +39,14 @@ createRoot(document.getElementById("root")!).render(
         element={
           <NavbarWrapper>
             <ForgotUserName />
+          </NavbarWrapper>
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <NavbarWrapper>
+            <HomePageChat />
           </NavbarWrapper>
         }
       />
