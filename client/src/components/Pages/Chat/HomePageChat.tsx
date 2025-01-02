@@ -1,23 +1,28 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ScrollableFeed from "react-scrollable-feed";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
-import { set } from "zod";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-
+import { Button } from "@/components/ui/button";
+interface MessagesType {
+  id: number;
+  name: string;
+  imgSrc: string;
+  messages: string;
+}
 const previousChats = [
   {
     id: 1,
@@ -114,17 +119,61 @@ interface selectedChatType {
   id: number;
   name: string;
   imgSrc: string;
-  messages: string;
+  message: string;
 }
+const messagesArray: MessagesType[] = [
+  {
+    message: "hey how are you",
+    senderId: 1,
+    receiverId: 2,
+  },
+  {
+    message: "I am fine",
+    senderId: 2,
+    receiverId: 1,
+  },
+  {
+    message: "I am fine",
+    senderId: 1,
+    receiverId: 2,
+  },
+  {
+    message: "What are you doing",
+    senderId: 2,
+    receiverId: 1,
+  },
+  {
+    message: "Nothing,tell me about yourself",
+    senderId: 1,
+    receiverId: 2,
+  },
+  {
+    message: "let meet tomorrow",
+    senderId: 2,
+    receiverId: 1,
+  },
+];
 const HomePageChat = () => {
   const [selectedChat, setSelectedChat] =
     React.useState<selectedChatType | null>(null);
   const HandleChatSelections = (chat: selectedChatType) => {
     setSelectedChat({ ...chat });
   };
+  const [messageinput, setMessageinput] = React.useState<string>("");
+  const [messages, setMessages] = React.useState<any>([...messagesArray]);
+  const HandleMessageSend = () => {
+    if (messageinput.trim().length === 0) {
+      return;
+    }
+    setMessages([
+      ...messages,
+      { message: messageinput, senderId: 1, receiverId: 2 },
+    ]);
+    setMessageinput("");
+  };
   return (
     <div className="w-screen h-[80vh] flex justify-center items-center">
-      <div className="w-4/5 min-h-[450px] grid grid-cols-6 rounded-lg">
+      <div className="w-4/5 min-h-[450px] grid grid-cols-6 rounded-lg shadow">
         <ScrollArea className="h-auto max-h-[450px] col-start-1 col-end-3 border flex flex-col items-between justify-between rounded-l-lg max-md:hidden">
           {previousChats.map((item) => {
             return (
@@ -145,7 +194,7 @@ const HomePageChat = () => {
                   <p className="text-md font-medium leading-none text-gray-900 dark:text-white">
                     {item.name}
                   </p>
-                  <p className=" text-xs leading-none text-muted-foreground line-clamp-1">
+                  <p className=" text-xs text-muted-foreground line-clamp-1">
                     {item.messages}
                   </p>
                 </div>
@@ -180,7 +229,61 @@ const HomePageChat = () => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className="h-full"> </div>
+                  <ScrollableFeed className="!max-h-[calc(450px-60px)] overflow-y-auto p-4 flex flex-col gap-2">
+                    {messages.map((item) => {
+                      return (
+                        <div
+                          className={`flex gap-2 items-center scroll ${
+                            item.senderId === 1
+                              ? "justify-start flex-row-reverse"
+                              : ""
+                          }`}
+                        >
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage
+                              src={
+                                item.senderId === 1
+                                  ? selectedChat?.imgSrc
+                                  : "https://randomuser.me/api/portraits/women/1.jpg"
+                              }
+                              alt={selectedChat?.name}
+                            />
+                            <AvatarFallback>
+                              {selectedChat?.name}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div
+                            className={`font-poppins flex flex-col gap-2 items-start justify-normal text-sm px-2 py-3 rounded-s-lg rounded-e-md ${
+                              item.senderId === 1
+                                ? "bg-green-300 text-primary-foreground text-white shadow hover:bg-green-300/90"
+                                : "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80"
+                            }`}
+                          >
+                            <p className="text-md font-medium leading-none text-gray-900 dark:text-white">
+                              {item.message}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </ScrollableFeed>
+                  <div>
+                    <div className="flex justify-center items-end w-full gap-2">
+                      <input
+                        placeholder="Type your message here."
+                        className="w-full bg-transparent px-3 py-2 border rounded-md focus:outline-[1px]"
+                        value={messageinput}
+                        onChange={(e) => setMessageinput(e.target.value)}
+                      />
+                      <Button
+                        className=""
+                        size={"sm"}
+                        onClick={HandleMessageSend}
+                      >
+                        Send
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent>
