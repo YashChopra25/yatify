@@ -49,7 +49,6 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function (next) {
   try {
-    console.log("runned pre save");
     if (this.isModified("password")) {
       const salt = await bcryptjs.genSalt(10);
       this.password = await bcryptjs.hash(this.password, salt);
@@ -57,7 +56,6 @@ userSchema.pre("save", async function (next) {
     }
     next();
   } catch (error) {
-    console.log(error);
     throw new Error(error);
   }
 });

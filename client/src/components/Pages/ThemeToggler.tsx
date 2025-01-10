@@ -6,7 +6,7 @@ const ThemeToggler = () => {
   const [state, setState] = useState<boolean>(false);
 
   useEffect(() => {
-    setState(localStorage.getItem("theme") === "light");
+    setState(localStorage.getItem("theme") === "dark");
   }, []);
   useEffect(() => {
     document.documentElement?.setAttribute("class", state ? "dark" : "light");

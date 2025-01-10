@@ -3,14 +3,16 @@ import { Input } from "./input";
 import { GenericInputFieldType } from "@/lib/Types";
 
 const InputField = ({
-  name,
-  type,
-  errors,
-  HandleOnChangeInput,
-  data,
-  required,
-  placeholder,
-}: GenericInputFieldType) => {
+  name="",
+  type="",
+  errors={},
+  HandleOnChangeInput=()=>{},
+  data="",
+  required=false,
+  placeholder="",
+  onKeyDown = () => {},
+  onKeyUp = () => {},
+}:GenericInputFieldType) => {
   return (
     <div className="space-y-1">
       <Label id={name} className="capitalize font-medium">
@@ -24,8 +26,11 @@ const InputField = ({
         value={data[name]}
         onChange={HandleOnChangeInput}
         placeholder={placeholder}
+        autoComplete="off"
+        onKeyDown={onKeyDown}
+        onKeyUp={onKeyUp}
       />
-      {errors[name] && (
+      {errors && errors[name] && (
         <span className="text-sm text-red-500">{errors[name]}</span>
       )}
     </div>

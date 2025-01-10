@@ -11,6 +11,12 @@ import {
 import InputField from "../ui/InputField";
 import { RegisterUserType, RegisterErrorType } from "@/lib/Types";
 import { HandleRegisterError } from "@/lib/validations";
+import { RegisterMutations } from "@/lib/Mutations";
+import { HandlerToaster } from "@/lib/utils";
+import { useAppDispatch } from "@/store/Auth.Store";
+import { login } from "@/store/Auth.slice";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Register = () => {
   const [data, setData] = useState<RegisterUserType>({
@@ -21,16 +27,28 @@ const Register = () => {
     confirm_password: "",
   });
   const [errors, setErrors] = useState<RegisterErrorType>({});
+  const navigate = useNavigate();
   const HandleOnChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
-
-  const HandleRegister = () => {
-    console.log(data);
+  const dispatch = useAppDispatch();
+  const HandleRegister = async () => {
     const errors = HandleRegisterError(data, setErrors);
     if (Object.keys(errors).length != 0) {
-      console.log(errors);
       return;
+    }
+    toast.loading("Registering...", {
+      id: "register",
+    });
+    const registerResponse = await RegisterMutations(data);
+    toast.dismiss("register");
+    if (registerResponse && !registerResponse.success) {
+      HandlerToaster(registerResponse.message, "error");
+      return;
+    }
+    if (registerResponse?.data) {
+      dispatch(login(registerResponse.data));
+      navigate("/chat");
     }
   };
   return (

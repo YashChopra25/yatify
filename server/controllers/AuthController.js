@@ -13,27 +13,27 @@ class ClassAuthControllers {
       if (!username || !password) {
         return res
           .status(400)
-          .send({ status: false, message: "All fields are required" });
+          .send({ success: false, message: "All fields are required" });
       }
 
       if (password.length < 6) {
         return res.status(400).send({
-          status: false,
+          success: false,
           message: "Password must be at least 6 characters",
         });
       }
       const user = await User.findOne({ username });
       if (!user) {
         return res.status(401).send({
-          status: false,
-          messsage: "Please login with you register account",
+          success: false,
+          message: "Please login with you register account",
         });
       }
       const hashedPassword = await bcryptjs.hash(password, user.salt);
       if (hashedPassword !== user.password) {
         return res.status(401).send({
-          status: false,
-          messsage: "Please login with you register account",
+          success: false,
+          message: "Please login with you register account",
         });
       }
       const { password: _, salt, ...restData } = user._doc;
@@ -42,12 +42,11 @@ class ClassAuthControllers {
       res.cookie("token", token, {
         httpOnly: process.env.NODE_ENV === "production",
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       });
       res.send({
         message: "Login Successfully",
-        status: "success",
+        success: true,
         data: restData,
       });
     } catch (error) {
@@ -57,7 +56,7 @@ class ClassAuthControllers {
   async register(req, res) {
     try {
       const { name, username, password, email, imgSrc } = req.body;
-      if (!name || !username || !password || !email || !imgSrc) {
+      if (!name || !username || !password || !email) {
         return res.status(400).send({ message: "All fields are required" });
       }
       if (password.length < 6) {
@@ -107,12 +106,11 @@ class ClassAuthControllers {
       res.cookie("token", token, {
         httpOnly: process.env.NODE_ENV === "production",
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       });
       res.send({
         message: "register",
-        status: "success",
+        success: "success",
         data: restUser,
       });
     } catch (err) {
@@ -122,7 +120,7 @@ class ClassAuthControllers {
   async forgotPassword(req, res) {
     try {
       const { email } = req.headers;
-      console.log(hashToken);
+
       if (!email || email.trim() === "") {
         throw new CustomError("Email is required");
       }
@@ -169,6 +167,93 @@ class ClassAuthControllers {
   async changePassword(req, res) {
     try {
       res.send("changePassword");
+    } catch (error) {
+      ErrorHandler(error, req, res);
+    }
+  }
+  async verifyToken(req, res) {
+    try {
+      const user = req.user;
+      const { password: _, salt, ...restData } = user._doc;
+
+      return res.json({
+        success: true,
+        data: restData,
+      });
+    } catch (error) {
+      res.cookie("token", "", {
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 0,
+      });
+      ErrorHandler(error, req, res);
+    }
+  }
+  async updateUser(req, res) {
+    try {
+      const { name, username, email } = req.body;
+
+      let updateField = {};
+      if (name) updateField.name = name;
+      if (username) updateField.username = username;
+      if (email) updateField.email = email;
+
+      const user = await User.findOneAndUpdate(
+        { _id: req.user.id },
+        { $set: updateField },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(400).send({
+          message: "Something went wrong,whilte updating the profile",
+          success: false,
+        });
+      }
+      const { password: _, salt, ...restData } = user._doc;
+
+      return res.status(200).send({
+        message: "Updated successfully",
+        data: restData,
+        success: true,
+      });
+    } catch (error) {
+      ErrorHandler(error, req, res);
+    }
+  }
+  async SearchUser(req, res) {
+    try {
+      const { query } = req.params;
+
+      if (!query || (query && query.trim() === "")) {
+        throw new CustomError("Provide at least three characters");
+      }
+      const userList = await User.find({
+        $or: [
+          { name: { $regex: query, $options: "i" } }, //i is for case insensitive,
+          { username: { $regex: query, $options: "i" } }, //i is for case insensitive,
+          { email: { $regex: query, $options: "i" } }, //i is for case insensitive,
+        ],
+        _id: { $ne: req.user.id },
+      }).select("name username email _id imgSrc");
+
+      return res.status(200).send({
+        message: "User List found",
+        success: true,
+        data: userList,
+      });
+    } catch (error) {
+      ErrorHandler(error, req, res);
+    }
+  }
+  async logout(req, res) {
+    try {
+      res.cookie("token", "", {
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 0,
+      });
+      res.send({ success: true, message: "logout", data: {} });
     } catch (error) {
       ErrorHandler(error, req, res);
     }

@@ -8,6 +8,7 @@ export const messageMiddleware = async (req, res, next) => {
     const { receiver } = req.headers;
     const sender = req.user;
     const invalidFields = [];
+    
     if (receiver) {
       if (!mongoose.isValidObjectId(sender?._id)) invalidFields.push("sender");
       if (!mongoose.isValidObjectId(receiver)) invalidFields.push("receiverr");

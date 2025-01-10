@@ -11,7 +11,6 @@ const DBConfig = async () => {
       console.log(err);
       process.exit(1);
     });
-    console.log(process.env.MONGO_URL)
   // await mongoose.connect("mongodb://mongodb:27017/");
 };
 

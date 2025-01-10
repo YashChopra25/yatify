@@ -7,7 +7,7 @@ const authMiddleware = (role) => {
     if (req.user.role !== role) {
       return res
         .status(401)
-        .send({ status: false, message: "Unauthorized access" });
+        .send({ success:false, message: "Unauthorized access" });
     }
     next();
   };
@@ -21,7 +21,7 @@ const AuthTokenMiddleware = async (req, res, next) => {
     if (!token) {
       return res
         .status(401)
-        .send({ status: false, message: "Unauthorized access" });
+        .send({ success:false, message: "Unauthorized access" });
     }
 
     const { _id } = await decodeToken(token);
@@ -38,7 +38,7 @@ const AuthTokenMiddleware = async (req, res, next) => {
     if (!user) {
       return res
         .status(401)
-        .send({ status: false, message: "Unauthorized access" });
+        .send({ success:false, message: "Unauthorized access" });
     }
 
     req.user = user;

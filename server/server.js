@@ -1,36 +1,70 @@
 import express from "express";
 import cors from "cors";
 import env from "dotenv";
+import http from "http";
 import DBConfig from "./DBConfig/DBConfig.js";
 import cookieParser from "cookie-parser";
+import { Server as SocketServer } from "socket.io"; // Correct import for socket.io
+
 env.config();
 const app = express();
+const server = http.createServer(app); // Creating the HTTP server
 const PORT = process.env.PORT || 8000;
+
+// CORS Options
 const corsOptions = {
-  origin: "*",
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  origin: ["http://localhost:3000", process.env.FRONTEND_URL],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "receiver"],
+  exposedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 };
-cors(corsOptions);
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-DBConfig();
+DBConfig(); // Configure database connection
+
+// Set up the Socket.io server
+const io = new SocketServer(server, {
+  cors: corsOptions,
+});
+
+// WebSocket Events
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  // Handle incoming message event (example)
+  socket.on("message", (message) => {
+    // Emit message to all connected clients
+    io.emit("receive_message", message);
+  });
+
+  // Handle user disconnect
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
+});
+// Test Route
 app.get("/", (req, res) => {
-  res.send("Hello yatify!,users are welcome");
+  res.send("Hello yatify!, users are welcome");
 });
 
 app.get("/test", (req, res) => {
   res.send({
-    message: "Server is up and running,Working fine....",
-    status: "success",
+    message: "Server is up and running, working fine....",
+    success: "success",
   });
 });
 
-// This is an auth middleware that checks if the user is logged in or not
+// Authentication routes and middlewares
 import HandleAuthRoutes from "./routes/HandleAuthRoutes.js";
 import { AuthTokenMiddleware } from "./middlewares/AuthMiddleware.js";
 import { AllRouteHandler, ErrorHandler } from "./utils/ErrorHandler.js";
-app.use("/api/v1/auth/users", HandleAuthRoutes);
+
+// API routes
+app.use("/api/v1/auth/user", HandleAuthRoutes);
 
 import MessageRoutes from "./routes/MessageRoutes.js";
 import { messageMiddleware } from "./middlewares/MessageMiddleware.js";
@@ -41,8 +75,11 @@ app.use(
   MessageRoutes
 );
 
-app.use("*", AllRouteHandler); //used for the all the not found routes
-app.use(ErrorHandler); //used for the all the error routes
-app.listen(PORT, () => {
-  console.log("Server started on port " + PORT);
+// Handle 404 and errors
+app.use("*", AllRouteHandler); // Handle not found routes
+app.use(ErrorHandler); // Handle errors globally
+
+// Start the server
+server.listen(PORT, () => {
+  console.info("Server started on port " + PORT);
 });
