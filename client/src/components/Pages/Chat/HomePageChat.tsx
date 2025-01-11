@@ -13,6 +13,7 @@ import ShowPreviousChatList from "./ShowPreviousChatList";
 import OpenChat from "./OpenChat";
 import { useAppSelector } from "@/store/Auth.Store";
 import SearchUser from "./SearchUser";
+import socket from "@/lib/socket";
 
 const HomePageChat = () => {
   const [selectedChat, setSelectedChat] =
@@ -40,7 +41,7 @@ const HomePageChat = () => {
   useLayoutEffect(() => {
     fetchChats();
   }, []);
-
+  const {user}=useAppSelector((state) => state.auth);
   const [isFetchingChats, setIsFetchingChats] = React.useState(false);
   useEffect(() => {
     if (selectedChat) {
@@ -63,6 +64,20 @@ const HomePageChat = () => {
       fetchMessages();
     }
   }, [selectedChat]);
+  useEffect(() => {
+    const RefreshChatListener = (data: LoggedUserDataFromBackendType) => {
+      console.log("refresh_previous_message",data)
+      if(data._id===user?._id){
+        fetchChats();
+      }
+    };
+    socket.on("refresh_previous_message", RefreshChatListener);
+
+    return () => {
+      socket.off("refresh_previous_message", RefreshChatListener);
+    };
+  }, [previousChats, user?._id]);
+
   const HandleChatSelections = (chat: LoggedUserDataFromBackendType) => {
     console.log("click", chat);
     setSelectedChat({ ...chat });

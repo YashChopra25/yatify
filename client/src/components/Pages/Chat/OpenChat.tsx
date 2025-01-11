@@ -16,10 +16,10 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
+import ShowUserProfile from "./ShowUserProfile";
 
 interface OpenChatPropsTypes {
   selectedChat: LoggedUserDataFromBackendType | null;
@@ -65,12 +65,14 @@ const OpenChat = React.memo(
     const { user } = useAppSelector((state) => state.auth);
     useEffect(() => {
       const messageListener = (data: AllmessageListType) => {
-        console.log("revcv");
+        console.log("revcv", data);
         if (user?._id === data.sender._id || user?._id === data.receiver._id)
           fetchChats();
         if (
-          selectedChat?._id === data.sender._id ||
-          selectedChat?._id === data.receiver._id
+          (selectedChat?._id === data.sender._id &&
+            user?._id === data.receiver._id) ||
+          (selectedChat?._id === data.receiver._id &&
+            user?._id === data.sender._id)
         ) {
           setMessages((prev) => [...prev, data]);
         }
@@ -107,7 +109,7 @@ const OpenChat = React.memo(
                   <EllipsisVertical />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <ShowUserProfile useInformation={selectedChat} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

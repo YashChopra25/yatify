@@ -39,6 +39,8 @@ io.on("connection", (socket) => {
   socket.on("message", (message) => {
     // Emit message to all connected clients
     io.emit("receive_message", message);
+    
+    io.emit("refresh_previous_message",message.receiver)
   });
 
   // Handle user disconnect
