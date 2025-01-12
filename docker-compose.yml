@@ -15,7 +15,7 @@ services:
       - mern_stack_yatify_network
   
   mongodb:
-    container_name: mongoDB
+    container_name: mongodb
     image: mongo:latest
     ports:
       - "27017:27017"
@@ -34,6 +34,7 @@ services:
   mongo-browser:
     image: mongo-express
     container_name: Browser_mongo_console
+    restart: always
     ports:
       - "8081:8081"
     env_file:

@@ -5,7 +5,7 @@ import http from "http";
 import DBConfig from "./DBConfig/DBConfig.js";
 import cookieParser from "cookie-parser";
 import { Server as SocketServer } from "socket.io"; // Correct import for socket.io
-
+import morgan from "morgan"
 env.config();
 const app = express();
 const server = http.createServer(app); // Creating the HTTP server
@@ -24,6 +24,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 DBConfig(); // Configure database connection
 
 // Set up the Socket.io server

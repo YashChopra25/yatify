@@ -2,6 +2,7 @@ import e from "express";
 import mongoose from "mongoose";
 
 const DBConfig = async () => {
+  console.log(process.env.MONGO_URL)
   mongoose
     .connect(process.env.MONGO_URL)
     .then((data) => {

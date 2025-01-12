@@ -10,12 +10,11 @@ COPY ./package*.json ./
 
 # Install the dependencies
 RUN npm install
-
 # Copy the rest of the application code to the container
 COPY . .
 
 # Expose the port that the app runs on
-EXPOSE 3000
+EXPOSE 5173
 
 # Ensure that Vite runs on 0.0.0.0 instead of localhost (inside Docker)
 ENV HOST=0.0.0.0
