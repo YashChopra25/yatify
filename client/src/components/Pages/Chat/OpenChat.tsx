@@ -85,6 +85,9 @@ const OpenChat = React.memo(
       };
     }, [fetchChats, setMessages, selectedChat, user?._id]);
 
+    useEffect(() => {
+      setMessageinput(""); // Clear the input field
+    }, [selectedChat]);
     if (selectedChat === null)
       return <div>Select a chat to start messaging</div>;
 
