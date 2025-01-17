@@ -65,7 +65,7 @@ const OpenChat = React.memo(
     const { user } = useAppSelector((state) => state.auth);
     useEffect(() => {
       const messageListener = (data: AllmessageListType) => {
-        console.log("revcv", data);
+        // console.log("revcv", data);
         if (user?._id === data.sender._id || user?._id === data.receiver._id)
           fetchChats();
         if (
@@ -85,6 +85,9 @@ const OpenChat = React.memo(
       };
     }, [fetchChats, setMessages, selectedChat, user?._id]);
 
+    useEffect(() => {
+      setMessageinput("");
+    }, [selectedChat]);
     if (selectedChat === null)
       return <div>Select a chat to start messaging</div>;
 

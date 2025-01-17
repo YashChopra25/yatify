@@ -2,10 +2,11 @@ import express from "express";
 import cors from "cors";
 import env from "dotenv";
 import http from "http";
-import DBConfig from "./DBConfig/DBConfig.js";
+import DBConfig from "./config/DBConfig.js";
 import cookieParser from "cookie-parser";
 import { Server as SocketServer } from "socket.io"; // Correct import for socket.io
-import morgan from "morgan"
+import morgan from "morgan";
+import "./config/kafka.js";
 env.config();
 const app = express();
 const server = http.createServer(app); // Creating the HTTP server

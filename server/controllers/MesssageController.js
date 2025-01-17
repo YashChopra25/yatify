@@ -2,12 +2,15 @@ import mongoose from "mongoose";
 import Message from "../models/messageModel.js";
 import { CustomError } from "../utils/error.js";
 import { ErrorHandler } from "../utils/ErrorHandler.js";
-const NotToShowInUserFetching = {
-  password: 0,
-  salt: 0,
-  __v: 0,
-  createdAt: 0,
-  updatedAt: 0,
+import { KafkaProducer } from "../config/kafka.js";
+const ReturnFields = (fields) => {
+  return {
+    _id: fields?._id,
+    email: fields?.email,
+    imgSrc: fields?.imgSrc,
+    name: fields?.name,
+    username: fields?.username,
+  };
 };
 const AggregateFn = (sort = -1) => [
   {
@@ -86,24 +89,18 @@ class MessageControllerClass {
           .send({ message: "Empty message can't be sent." });
       }
 
-      const newMessage = await Message.create({
-        sender: sender._id,
-        receiver: receiver._id,
+      const payload = {
+        _id: Date.now(),
+        sender: ReturnFields(sender),
+        receiver: ReturnFields(receiver),
         content: message,
-      });
-      if (!newMessage) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Failed to send message." });
-      }
-      const fetchMessage = await Message.findById(newMessage._id)
-        .populate("sender", NotToShowInUserFetching)
-        .populate("receiver", NotToShowInUserFetching);
+      };
+      await KafkaProducer("message", payload);
 
       return res.status(201).json({
         success: true,
         message: "Message sent successfully",
-        data: fetchMessage,
+        data: payload,
       });
     } catch (error) {
       ErrorHandler(error, req, res);
@@ -162,7 +159,7 @@ class MessageControllerClass {
           $project: {
             _id: 1, // Retain the interacting user's ID
             user: {
-              _id:"$user._id",
+              _id: "$user._id",
               name: "$user.name",
               email: "$user.email",
               username: "$user.username",
@@ -180,7 +177,7 @@ class MessageControllerClass {
       const messages = await Message.aggregate(pipeline);
       return res.status(200).json({
         success: true,
-        message: "All loggedIn user messages",
+        message: "User's all messages",
         data: messages || [],
       });
     } catch (error) {
@@ -221,7 +218,7 @@ class MessageControllerClass {
 
       return res.status(200).json({
         success: true,
-        message: "All Messages are fetch",
+        message: "All Messages are fetched",
         data: MessageList,
       });
     } catch (error) {

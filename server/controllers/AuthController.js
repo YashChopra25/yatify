@@ -5,6 +5,7 @@ import { ErrorHandler } from "../utils/ErrorHandler.js";
 import { validateEmail } from "../utils/general.js";
 import { GenerateAuthToken } from "../utils/GenerateAuthToken.js";
 import validator from "validator";
+import { sendMail } from "../config/email.js";
 class ClassAuthControllers {
   async login(req, res) {
     try {
