@@ -1,6 +1,14 @@
+# This is under development for the RabbitMQ
+# Current Branch-> **with-kafka-using-docker**
 # Yatify-this is a chat app
-## This is being developed using **React**,**Express**,**MongoDB**,**Docker** and **Kafka**
+## This is being developed using **React**,**Express**,**MongoDB**,**Docker** and **Kafka**/ **RabbitMQ**
 
+> This project consist mainly three branches:
+> * **main** Branch: This consist the source code the server and client
+> * **with-docker-only** Branch: This consist the source code the server and client with the docker
+> * **with-kafka-using-docker** Branch: This consist the source code the server and client with the docker using the **Kafka**
+
+>
 
 # Installation Step
 > # Step 1: Getting Source Code
@@ -19,15 +27,16 @@
 >    * create an environment file using this command `cp sample.env .env` to change the environment values according to the requirements
 >
 ># Step 3:
-> Go to the root directory
+>
+>## Method 1: With Docker
+> * Go to the root directory
 >
 >  *Note:**Docker** must be installed in your system and it should be in the running state*
 >## Download [Docker](https://docs.docker.com/desktop/setup/install/windows-install/)
 >For verifying whether the docker is running or not use this command in your terminal `docker ps`
 >
->* Open the terminal in the root directory and run this command `npm start`.
->
->To close the container  run this command `npm stop`
+>* Open the terminal in the root directory and run this command `npm start`,
+> * To close the container  run this command `npm stop`
 >
 >
 >The above command file read the Docker file located in the server and client folder and then pull the image for the first time if exist else it will used the previous image,then run the server on that port.
