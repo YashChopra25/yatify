@@ -1,19 +1,16 @@
-version: '3.8'
-
 services:
-  node-app:
-    container_name: node_app_demo
+  client-app:
+    container_name: client-app-demo
     build:
-      context: ./server
+      context: ./client
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "5173:5173"
     volumes:
-      - ./server:/home/server
-      - /home/server/node_modules
+      - ./client:/home/client
+      - /home/client/node_modules
     depends_on:
-      - mongodb
-      - kafka
+      - node-app
     networks:
       - mern_stack_yatify_network
 
@@ -47,26 +44,14 @@ services:
     networks:
       - mern_stack_yatify_network
 
-  client-app:
-    container_name: client-app-demo
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./client:/home/client
-      - /home/client/node_modules
-    depends_on:
-      - node-app
-    networks:
-      - mern_stack_yatify_network
-
   zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.1
     container_name: zookeeper
-    image: zookeeper
     ports:
       - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     networks:
       - mern_stack_yatify_network
 
@@ -79,13 +64,18 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
     depends_on:
       - zookeeper
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      test:
+        [
+          "CMD",
+          "kafka-topics.sh",
+          "--bootstrap-server",
+          "localhost:9092",
+          "--list",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -99,6 +89,23 @@ services:
       - 8080:8080
     environment:
       DYNAMIC_CONFIG_ENABLED: true
+    networks:
+      - mern_stack_yatify_network
+
+  node-app:
+    container_name: node_app_demo
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/home/server
+      - /home/server/node_modules
+    depends_on:
+      - mongodb
+      - kafka
+
     networks:
       - mern_stack_yatify_network
 

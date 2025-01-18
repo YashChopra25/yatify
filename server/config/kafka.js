@@ -3,9 +3,12 @@ import Message from "../models/messageModel.js";
 
 const kafka = new Kafka({
   clientId: "chat-app-by-yash",
-  brokers: ["172.18.0.5:9092"], // 'kafka' is the hostname of the Kafka container
+  brokers: ["kafka:9092"],
   logLevel: logLevel.ERROR,
 });
+
+const producer = kafka.producer();
+const consumer = kafka.consumer({ groupId: "chat-app-by-yash" });
 
 async function initKafka() {
   try {
@@ -13,7 +16,8 @@ async function initKafka() {
     const admin = kafka.admin();
     await admin.connect();
     console.log("Kafka Admin connected");
-    await admin.createTopics({
+
+    const topicsCreated = await admin.createTopics({
       topics: [
         {
           topic: "message",
@@ -22,81 +26,82 @@ async function initKafka() {
         },
       ],
     });
+
+    if (topicsCreated) {
+      console.log("Topic 'message' created successfully");
+    } else {
+      console.log("Topic 'message' already exists or no topics created");
+    }
+
     await admin.disconnect();
   } catch (error) {
-    console.error("Failed to connect to Kafka:", error);
-    setTimeout(initKafka, 5000); // Retry every 5 seconds
+    console.error("Failed to connect to Kafka Admin:", error.message);
+    setTimeout(initKafka, 5000);
   }
 }
-initKafka();
 
-const producer = kafka.producer();
-const consumer = kafka.consumer({ groupId: "chat-app-by-yash" });
+async function initProducer() {
+  try {
+    await producer.connect();
+    console.log("Kafka Producer connected");
+  } catch (error) {
+    console.error("Failed to connect Kafka Producer:", error.message);
+  }
+}
+
 async function KafkaProducer(topic, message) {
-  await producer.connect();
-  console.log("Producer connected");
-  producer.send({
-    topic: topic,
-    messages: [
-      {
-        value: JSON.stringify(message),
-      },
-    ],
-  });
+  try {
+    await producer.connect();
+    await producer.send({
+      topic: topic,
+      messages: [{ value: JSON.stringify(message) }],
+    });
+    console.log(`Message sent to topic "${topic}"`);
+  } catch (error) {
+    console.error("Failed to send message:", error.message);
+  }
 }
 
-async function KafkaConsumer(topic) {
-  await consumer.connect();
-  await consumer.subscribe({ topic: topic, fromBeginning: true });
-  await consumer.run({
-    eachBatch: async ({ batch }) => {
-      const messages = batch.messages.map((message) =>
-        JSON.parse(message.value.toString())
-      );
+async function initConsumer() {
+  try {
+    await consumer.connect();
+    console.log("Kafka Consumer connected");
 
-      // Bulk insert messages into the database
-      const formattedMessages = messages.map((msg) => ({
-        content: msg.content,
-        createdAt: msg.createdAt,
-        updatedAt: msg.updatedAt,
-        sender: msg.sender._id,
-        receiver: msg.receiver._id,
-      }));
+    await consumer.subscribe({ topic: "message", fromBeginning: true });
+    console.log("Subscribed to topic 'message'");
 
-      try {
-        await Message.insertMany(formattedMessages);
-        console.log(
-          `${formattedMessages.length} messages saved to the database`
+    await consumer.run({
+      eachBatch: async ({ batch }) => {
+        const messages = batch.messages.map((message) =>
+          JSON.parse(message.value.toString())
         );
-      } catch (error) {
-        console.error("Error saving batch to the database:", error);
-      }
-    },
-    //this is for process one by one message and save in database this causes problem in the throughtout while scaling
-    // eachMessage: async ({ topic, partition, message }) => {
-    //   if (topic === "message") {
-    //     const messageData = JSON.parse(message.value.toString());
-    //     const messageCreate = new Message({
-    //       content: messageData.content,
-    //       createdAt: messageData.createdAt,
-    //       updatedAt: messageData.updatedAt,
-    //       sender: messageData.sender._id,
-    //       receiver: messageData.receiver._id,
-    //     });
-    //     await messageCreate.save();
-    //     console.log("Message created in the backend too,", messageCreate);
-    //   } else {
-    //     console.warn("This is not a topic is not subscribed message", topic);
 
-    //     console.log({
-    //       topic,
-    //       partition,
-    //       offset: message.offset,
-    //       value: message.value.toString(),
-    //     });
-    //   }
-    // },
-  });
+        const formattedMessages = messages.map((msg) => ({
+          content: msg.content,
+          createdAt: msg.createdAt,
+          updatedAt: msg.updatedAt,
+          sender: msg.sender._id,
+          receiver: msg.receiver._id,
+        }));
+
+        try {
+          await Message.insertMany(formattedMessages);
+          console.log(
+            `${formattedMessages.length} messages saved to the database`
+          );
+        } catch (error) {
+          console.error("Error saving batch to the database:", error.message);
+        }
+      },
+    });
+  } catch (error) {
+    console.error("Failed to initialize Kafka Consumer:", error.message);
+    setTimeout(initConsumer, 5000);
+  }
 }
-KafkaConsumer("message");
-export { kafka, KafkaProducer, KafkaConsumer };
+
+initKafka();
+initProducer();
+initConsumer();
+
+export { KafkaProducer };
