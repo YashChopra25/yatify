@@ -7,7 +7,6 @@ import React from "react";
 const ShowMessages = React.memo(
   ({ messages }: { messages: AllmessageListType[] }) => {
     const { user } = useAppSelector((state) => state.auth);
-    console.log("rendering");
     return (
       <ScrollableFeed className="!max-h-[calc(450px-60px)] overflow-y-auto p-4 flex flex-col gap-2">
         {messages.map((item) => {

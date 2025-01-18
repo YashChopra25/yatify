@@ -34,7 +34,6 @@ const io = new SocketServer(server, {
 
 // WebSocket Events
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
 
   // Handle incoming message event (example)
   socket.on("message", (message) => {
@@ -46,7 +45,6 @@ io.on("connection", (socket) => {
 
   // Handle user disconnect
   socket.on("disconnect", () => {
-    console.log("A user disconnected:", socket.id);
   });
 });
 // Test Route

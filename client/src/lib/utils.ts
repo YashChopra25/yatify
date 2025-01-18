@@ -27,7 +27,6 @@ export const HandlerToaster = (message: string, type: "success" | "error") => {
       toast.error(message, defaultSetting);
       break;
     default:
-      console.warn(`Unknown toast type: ${type}`);
       toast.info(message, defaultSetting); // Default to "info" for unknown types
       break;
   }

@@ -66,7 +66,6 @@ const HomePageChat = () => {
   }, [selectedChat]);
   useEffect(() => {
     const RefreshChatListener = (data: LoggedUserDataFromBackendType) => {
-      console.log("refresh_previous_message",data)
       if(data._id===user?._id){
         fetchChats();
       }
@@ -79,7 +78,6 @@ const HomePageChat = () => {
   }, [previousChats, user?._id]);
 
   const HandleChatSelections = (chat: LoggedUserDataFromBackendType) => {
-    console.log("click", chat);
     setSelectedChat({ ...chat });
   };
   const [messages, setMessages] = React.useState<AllmessageListType[]>([]);

@@ -65,7 +65,6 @@ const OpenChat = React.memo(
     const { user } = useAppSelector((state) => state.auth);
     useEffect(() => {
       const messageListener = (data: AllmessageListType) => {
-        console.log("revcv", data);
         if (user?._id === data.sender._id || user?._id === data.receiver._id)
           fetchChats();
         if (
