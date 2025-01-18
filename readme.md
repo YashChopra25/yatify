@@ -1,8 +1,14 @@
 # This is under development for the RabbitMQ
 
 # Yatify-this is a chat app
-## This is being developed using **React**,**Express**,**MongoDB**,**Docker** and **Kafka** and **RabbitMQ**
+## This is being developed using **React**,**Express**,**MongoDB**,**Docker** and **Kafka**/ **RabbitMQ**
 
+> This project consist mainly three branches:
+> * **main** Branch: This consist the source code the server and client
+> * **with-docker-only** Branch: This consist the source code the server and client with the docker
+> * **with-kafka-using-docker** Branch: This consist the source code the server and client with the docker using the **Kafka**
+
+>
 
 # Installation Step
 > # Step 1: Getting Source Code
